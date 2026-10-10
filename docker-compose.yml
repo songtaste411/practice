@@ -1,0 +1,53 @@
+# 老兵诊所：第 3 层，一条命令拉起接近生产的全套。
+# 只想在本机改代码时，不要用这个，看 docs/01-local.md。
+
+name: prod-clinic
+
+services:
+  postgres:
+    image: swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/library/postgres:16
+    environment:
+      POSTGRES_USER: clinic
+      POSTGRES_PASSWORD: clinic
+      POSTGRES_DB: prodclinic
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./volumes/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U clinic -d prodclinic"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks: [clinic]
+
+  redis:
+    image: swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/library/redis:7.4
+    ports:
+      - "6379:6379"
+    networks: [clinic]
+
+  api:
+    build: ./backend
+    image: prod-clinic-api:latest
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks: [clinic]
+
+  web:
+    build: ./frontend
+    image: prod-clinic-web:latest
+    ports:
+      - "18080:80"
+    depends_on: [api]
+    networks: [clinic]
+
+networks:
+  clinic:

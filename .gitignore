@@ -1,0 +1,11 @@
+target/
+node_modules/
+dist/
+volumes/
+.idea/
+*.iml
+.vscode/
+.DS_Store
+*.log
+frontend/node_modules/
+backend/target/

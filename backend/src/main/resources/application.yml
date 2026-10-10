@@ -1,0 +1,58 @@
+# 老兵诊所默认配置。
+# 本机直接跑走 local（内存库，不用装数据库）。
+# docker compose 会把 profile 改成 docker。
+spring:
+  application:
+    name: prod-clinic
+  profiles:
+    default: local
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate.jdbc.time_zone: UTC
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  threads:
+    virtual:
+      # Java 21 虚拟线程。训练场默认打开。
+      # 以后如果碰到“卡住不还线程”的病，先看阻塞调用有没有把载体线程钉死。
+      enabled: true
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+server:
+  port: 8080
+  error:
+    include-message: never
+    include-stacktrace: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+
+logging:
+  pattern:
+    level: "%5p [trace=%X{traceId:-}]"
+  level:
+    com.clinic: INFO
+
+clinic:
+  jwt:
+    # 至少 32 个字符。只给本机训练用。
+    secret: "clinic-local-secret-change-me-please-32b"
+    expire-hours: 12
+  redis:
+    enabled: false
+  cases:
+    # 启动时的库存策略开关。页面上可以临时改，重启后回到这里。
+    # none = 健康实现。明天新增策略后，把这里改成 day01 之类。
+    active: none
