@@ -107,6 +107,8 @@
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
+                            <!-- 必须写版本。不写时 IDEA 会去找不存在的 lombok-unknown.jar，@Getter 就不会生成。 -->
+                            <version>${lombok.version}</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>

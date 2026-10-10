@@ -39,6 +39,8 @@ powershell -ExecutionPolicy Bypass -File .\tools\run-web.ps1
 
 浏览器打开 http://localhost:5173 。
 
+用 IDEA 直接运行 `ClinicApplication` 也可以。Lombok 插件只负责编辑器认识 `@Getter`，真正编译还要找到 Lombok 的 jar。`pom.xml` 里已经写了版本。如果还报「找不到 getSkuCode」：右侧 Maven 面板点刷新，再选菜单 Build → Rebuild Project。
+
 更接近生产的启动方式、镜像和 K8s，看：
 
 - [docs/01-local.md](docs/01-local.md)
