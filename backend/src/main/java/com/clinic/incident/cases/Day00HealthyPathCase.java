@@ -32,22 +32,22 @@ public class Day00HealthyPathCase implements IncidentCase {
 
     @Override
     public String title() {
-        return "健康路径体检";
+        return "试一次正常下单";
     }
 
     @Override
     public String symptom() {
-        return "点复现会真实下一笔「龙井试饮」。库存少 1，订单状态是 RESERVED，日志里有追踪号和 Outbox。";
+        return "点「试一次」会真的买一杯龙井。回到「下单」页，还能卖的数量少 1，多出一笔待付款。";
     }
 
     @Override
     public String veteranPoint() {
-        return "先记住健康时长什么样：短事务、乐观锁、幂等键、金额用分、消息走 Outbox。以后的病都是这条路的某个环节坏了。";
+        return "先记住正常情况：下单一杯只少一件，付款也不会再少一件。";
     }
 
     @Override
     public String howToEnable() {
-        return "不用开。它不替换库存策略。库存不够时，复现结果会告诉你还剩多少。";
+        return "不用改开关，直接点。库存不够时，结果里会告诉你还剩多少。";
     }
 
     @Override
@@ -58,19 +58,19 @@ public class Day00HealthyPathCase implements IncidentCase {
     @Override
     public ReproductionResult reproduce() {
         var steps = List.of(
-                "用一个新的幂等键下一笔 TEA x 1",
-                "库存可售减 1，预占加 1",
-                "同一事务写入订单、幂等记录、Outbox",
-                "到履约台可以再点一次支付，预占会被确认掉"
+                "真的买一杯龙井",
+                "还能卖的少 1，先占着的多 1",
+                "回到「下单」页能看到这笔待付款",
+                "再点假装付款，占着的货才算卖掉"
         );
         try {
             var view = orders.place(
                     new PlaceOrderRequest("病例复现", List.of(new PlaceOrderRequest.Line("TEA", 1))),
                     "day00-" + UUID.randomUUID());
             log.info("[day00] 体检订单 {}", view.orderNo());
-            return new ReproductionResult(code(), "主链路是通的，订单号 " + view.orderNo(), steps, view);
+            return new ReproductionResult(code(), "买好了，订单号 " + view.orderNo(), steps, view);
         } catch (BizException ex) {
-            return new ReproductionResult(code(), "体检没有下成：" + ex.getMessage(), steps,
+            return new ReproductionResult(code(), "没买成：" + ex.getMessage(), steps,
                     Map.of("code", ex.errorCode().code()));
         }
     }

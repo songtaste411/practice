@@ -20,22 +20,22 @@ public class Day99TemplateCase implements IncidentCase {
 
     @Override
     public String title() {
-        return "模板：复制我，变成明天的病例";
+        return "以后加新题的空位";
     }
 
     @Override
     public String symptom() {
-        return "我本身没有病。我只告诉你新病例该放哪。";
+        return "这不是故障，是以后加新练习题的空位。";
     }
 
     @Override
     public String veteranPoint() {
-        return "病要可开关、可复现、可单独关掉。修完把根因写回这个病例的 veteranPoint，别只留在聊天记录里。";
+        return "今天跳过。新题要能单独打开，也能单独关掉。";
     }
 
     @Override
     public String howToEnable() {
-        return "在项目根目录运行：powershell -ExecutionPolicy Bypass -File .\\tools\\new-case.ps1 -Day 01 -Name Oversell -Title \"连点超卖\"";
+        return "先不用管。以后要加题时，再看说明书里的「以后再看」。";
     }
 
     @Override

@@ -39,7 +39,7 @@ public class DemoDataSeeder implements ApplicationRunner {
         if (users.count() > 0) {
             return;
         }
-        users.save(UserAccount.create("demo", encoder.encode("demo123"), "演示医生", "ADMIN"));
+        users.save(UserAccount.create("demo", encoder.encode("demo123"), "演示账号", "ADMIN"));
         seed("TEA", "龙井试饮", 2800, 20);
         seed("MUG", "夜班马克杯", 3900, 8);
         seed("BOOK", "并发这件小事", 6800, 5);

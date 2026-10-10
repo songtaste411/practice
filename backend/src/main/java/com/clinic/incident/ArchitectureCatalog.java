@@ -17,34 +17,34 @@ public class ArchitectureCatalog {
 
     private List<SystemMap.ContextCard> contexts() {
         return List.of(
-                new SystemMap.ContextCard("身份", "登录、令牌。不管订单。", "identity"),
-                new SystemMap.ContextCard("商品", "编码、名字、价格。不管库存。", "catalog"),
-                new SystemMap.ContextCard("库存", "可售、预占、乐观锁。不管价格从哪来。", "inventory"),
-                new SystemMap.ContextCard("订单", "下单、幂等、状态。价格以下单当时为准。", "ordering"),
-                new SystemMap.ContextCard("支付", "回调幂等，把预占确认掉。", "payment"),
-                new SystemMap.ContextCard("病例", "开关、现象、复现。病从这里挂进去。", "incident"),
-                new SystemMap.ContextCard("共用", "追踪号、错误码、Outbox、时钟。", "shared")
+                new SystemMap.ContextCard("登录", "只管账号和密码。", "identity"),
+                new SystemMap.ContextCard("商品", "只管名字和价钱，不管还剩几件。", "catalog"),
+                new SystemMap.ContextCard("库存", "只管还能卖几件、有几件被下单占着。", "inventory"),
+                new SystemMap.ContextCard("订单", "谁买了什么。价钱以下单那一刻为准。", "ordering"),
+                new SystemMap.ContextCard("付款", "收到付款后，把占着的货变成卖掉。", "payment"),
+                new SystemMap.ContextCard("故障开关", "以后的练习题从这里打开。", "incident"),
+                new SystemMap.ContextCard("共用的小工具", "每条报错一个编号，方便对日志。", "shared")
         );
     }
 
     private List<SystemMap.HookCard> hooks() {
         return List.of(
-                new SystemMap.HookCard("库存策略", "inventory/domain/ReserveStrategy.java",
-                        "明天的病大多挂在这里：超卖、扣两次、忘记乐观锁。"),
-                new SystemMap.HookCard("策略路由", "inventory/app/ReserveStrategyRouter.java",
-                        "按开关挑选策略。同一时间只开一个病。"),
-                new SystemMap.HookCard("下单事务", "ordering/app/PlaceOrderTx.java",
-                        "库存、订单、幂等、Outbox 必须同一个事务。重试在事务外面。"),
-                new SystemMap.HookCard("幂等表", "idempotency_record",
-                        "防重复点击。键要和请求内容一起存，不能只存键。"),
-                new SystemMap.HookCard("支付回调", "payment/app/PaymentTx.java",
-                        "支付单号唯一 + 订单状态机。两道都要有。"),
-                new SystemMap.HookCard("Outbox", "shared/outbox/OutboxPublisher.java",
-                        "现在只打日志。以后从这里换成 Kafka，失败不要标记已发送。"),
+                new SystemMap.HookCard("库存怎么扣", "inventory/domain/ReserveStrategy.java",
+                        "以后的故障大多改这里，比如连点扣了两次。"),
+                new SystemMap.HookCard("开关选哪一种扣法", "inventory/app/ReserveStrategyRouter.java",
+                        "同一时间只用一种扣法。"),
+                new SystemMap.HookCard("下单时一起保存", "ordering/app/PlaceOrderTx.java",
+                        "扣库存、写订单要一起成功。不能扣了库存却没订单。"),
+                new SystemMap.HookCard("防连点", "idempotency_record",
+                        "同一单再提交一次，不应该再扣库存。"),
+                new SystemMap.HookCard("付款", "payment/app/PaymentTx.java",
+                        "同一笔付款来两次，只能算一次。"),
+                new SystemMap.HookCard("付款后的通知", "shared/outbox/OutboxPublisher.java",
+                        "现在只写在日志里。以后再接到消息队列。"),
                 new SystemMap.HookCard("商品缓存", "catalog/cache/SkuCache.java",
-                        "只缓存名字和价格。库存禁止进缓存。"),
-                new SystemMap.HookCard("追踪号", "shared/web/TraceFilter.java",
-                        "报错必须能对上日志。没有追踪号的告警等于没有告警。")
+                        "只记住名字和价钱。库存不要放进缓存。"),
+                new SystemMap.HookCard("报错编号", "shared/web/TraceFilter.java",
+                        "每次请求有一个编号，报错时能对上日志。")
         );
     }
 }

@@ -26,7 +26,7 @@ public class HealthyReserveStrategy implements ReserveStrategy {
 
     @Override
     public String title() {
-        return "健康实现：乐观锁，扣库存和写订单在同一个事务";
+        return "正常扣库存";
     }
 
     @Override

@@ -1,36 +1,51 @@
 <template>
   <div>
-    <h1 class="page-title">架构地图</h1>
-    <p class="page-desc">一个可以运行的模块化单体。边界用包划开，先不拆成一堆微服务。病从挂钩点长出来。</p>
-    <p class="trace">服务状态：{{ health }}</p>
+    <h1 class="page-title">程序怎么分</h1>
+    <p class="page-desc">不用背。把它想成一家店，每个人只做自己的事。</p>
+    <p class="quiet">{{ healthText }}</p>
 
-    <div class="grid-2">
-      <section class="card">
-        <h3>边界</h3>
-        <div v-for="item in contexts" :key="item.packageName" class="sku">
-          <div>
-            <strong>{{ item.name }}</strong>
-            <div>{{ item.duty }}</div>
+    <section class="guide">
+      <strong>五个柜台</strong>
+      <ol>
+        <li>登录：只认人，不管卖什么。</li>
+        <li>商品：只记名字和价钱，不管还剩几件。</li>
+        <li>库存：只记还能卖几件、有几件被下单占着。</li>
+        <li>订单：记谁买了什么。</li>
+        <li>付款：把「先占着」变成「卖掉了」。</li>
+      </ol>
+      <p class="quiet">价钱和库存分开写，是为了以后改库存时，不会把价钱改坏。</p>
+    </section>
+
+    <details class="card">
+      <summary>代码放在哪（第一次不用打开）</summary>
+      <div class="grid-2" style="margin-top:12px">
+        <section>
+          <h3>各管一块</h3>
+          <div v-for="item in contexts" :key="item.packageName" class="sku">
+            <div>
+              <strong>{{ item.name }}</strong>
+              <div>{{ item.duty }}</div>
+            </div>
+            <code>{{ item.packageName }}</code>
           </div>
-          <code>{{ item.packageName }}</code>
-        </div>
-      </section>
-      <section class="card">
-        <h3>明天往哪挂钩</h3>
-        <div v-for="item in hooks" :key="item.name" class="sku">
-          <div>
-            <strong>{{ item.name }}</strong>
-            <div>{{ item.why }}</div>
-            <div class="trace">{{ item.where }}</div>
+        </section>
+        <section>
+          <h3>以后故障会改这些地方</h3>
+          <div v-for="item in hooks" :key="item.name" class="sku">
+            <div>
+              <strong>{{ item.name }}</strong>
+              <div>{{ item.why }}</div>
+              <div class="trace">{{ item.where }}</div>
+            </div>
           </div>
-        </div>
-      </section>
-    </div>
+        </section>
+      </div>
+    </details>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { api } from '../api/http'
 import http from '../api/http'
 
@@ -40,6 +55,11 @@ interface HookCard { name: string; where: string; why: string }
 const contexts = ref<ContextCard[]>([])
 const hooks = ref<HookCard[]>([])
 const health = ref('检查中')
+const healthText = computed(() => {
+  if (health.value === '检查中') return '正在看程序开没开'
+  if (health.value === 'UP') return '程序正在运行'
+  return `程序状态：${health.value}`
+})
 
 onMounted(async () => {
   const map = await api<{ contexts: ContextCard[]; hooks: HookCard[] }>('get', '/api/meta/map')

@@ -2,8 +2,8 @@
   <div class="login-wrap">
     <div class="login-card">
       <h1 class="page-title">老兵诊所</h1>
-      <p class="page-desc">先把房子盖好。明天开始，一天送一个线上故障进来，你来修。</p>
-      <div class="hint">演示账号 demo，密码 demo123。金额在系统里按「分」计算，页面上显示成元。</div>
+      <p class="page-desc">这是一个小商店。你先把「选商品、下单、付款」走一遍。商店现在是好的，以后才会加故障。</p>
+      <div class="hint">账号和密码已经填好了：demo / demo123。点下面的按钮就能进去。</div>
       <el-form @submit.prevent="submit">
         <el-form-item label="账号">
           <el-input v-model="username" autocomplete="username" />
@@ -11,7 +11,7 @@
         <el-form-item label="密码">
           <el-input v-model="password" type="password" show-password autocomplete="current-password" @keyup.enter="submit" />
         </el-form-item>
-        <el-button type="primary" :loading="loading" style="width:100%" @click="submit">进入诊所</el-button>
+        <el-button type="primary" :loading="loading" style="width:100%" @click="submit">进去下单</el-button>
       </el-form>
     </div>
   </div>
