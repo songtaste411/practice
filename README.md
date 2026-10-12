@@ -1,6 +1,6 @@
 # 老兵诊所
 
-这是一个能下单的小商店。商店现在是好的。你先把正常买卖走一遍，以后再往里面加故障。
+这是一个能下单的小商店。商店主链路是好的。你先把正常买卖走一遍，再去做第一天的对比题。
 
 账号 `demo`，密码 `demo123`。页面上已经填好。
 
@@ -13,13 +13,27 @@
 | 页面 | 现在要不要看 |
 | --- | --- |
 | 下单 | 要。按页面上的 4 步点一遍 |
-| 故障开关 | 今天不用改。想看就点一次「试一次」，会真的买一杯龙井 |
-| 程序怎么分 | 今天不用看。它只说明代码分成登录、商品、库存、订单、付款 |
+| 故障开关 | 今天要。打开 DAY-01，点「试一次」 |
+| 程序怎么分 | 第一次不用看 |
 
-在「下单」页你会看到：
+## 第一天：线程开太多，反而更慢
 
-1. 点「加入」，再点「提交订单」。「还能卖」少 1，「先占着」多 1。先占着就是：单下了，钱还没付，货先留着。
-2. 勾上「连点测试」，再提交一次。数量不变。连点两次也只会扣一次。
+对应课本里那句：频繁的上下文切换会浪费 CPU；线程数不是越多越好，要用合理的线程池。
+
+1. 打开「故障开关」。
+2. 找到 **DAY-01 线程开太多，反而更慢**。
+3. 点「试一次」（大约几秒，按钮会转圈）。
+4. 看下面两块：
+   - 左边「乱开线程」：每个小任务都 `new` 一个线程
+   - 右边「线程池」：固定几个工人反复接活
+5. 比耗时和峰值线程数。乱开那一边通常更慢——CPU 忙着换人，真正干活的时间反而少。
+
+这一题**不会改下单**，不用动「库存怎么扣」开关。
+
+## 在「下单」页你会看到
+
+1. 点「加入」，再点「提交订单」。「还能卖」少 1，「先占着」多 1。
+2. 勾上「连点测试」，再提交一次。数量不变。
 3. 点「假装付款」。「先占着」回到 0，订单变成已付款。
 
 ## 这几个词
@@ -30,7 +44,9 @@
 | 先占着 | 有人下单了还没付款，这几件先留着 |
 | 待付款 | 单下了，钱没付 |
 | 已付款 | 付过了，货算卖掉 |
-| 连点测试 | 同一单再交一次，库存不应该再少 |
+| 乱开线程 | 每个任务单独开一个线程，又多又短命 |
+| 线程池 | 固定几个工人反复干活，少创建、少切换 |
+| 峰值线程 | 跑的时候，进程里线程数摸到的最高值 |
 
 价钱在程序内部用「分」记，页面上已经换成元。28.00 元在程序里是 2800。
 
@@ -72,10 +88,8 @@ Compose 起来之后，网页在 http://localhost:18080 。
 最短命令：
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\tools\new-case.ps1 -Day 01 -Name Oversell -Title "连点超卖"
+powershell -ExecutionPolicy Bypass -File .\tools\new-case.ps1 -Day 02 -Name PayDouble -Title "支付回调两次"
 ```
-
-重启后端，打开「故障开关」，把「库存怎么扣」改到 `day01`。
 
 ## 以后再看：程序怎么分
 
@@ -90,31 +104,15 @@ powershell -ExecutionPolicy Bypass -File .\tools\new-case.ps1 -Day 01 -Name Over
 老兵诊所 API (Java 21 + Spring Boot 3.4)
   identity   登录
   catalog    商品和价格
-  inventory  库存策略（明天的病主要挂这里）
+  inventory  库存策略
   ordering   下单、幂等、状态
   payment    支付回调
-  incident   病例板和开关
+  incident   病例板和开关（DAY-01 的线程对比在这里）
   shared     追踪号、错误码、Outbox
         |
         +-- 本机：内存数据库 H2
         +-- Compose / K8s：Postgres + Redis
 ```
-
-已经埋好的老兵挂钩：
-
-| 挂钩 | 健康时长什么样 |
-| --- | --- |
-| 乐观锁 | 库存行有 `version`。两个人同时扣，后写的那个会失败并重试 |
-| 短事务 | 扣库存、写订单、写幂等、写 Outbox 在同一个事务里。重试在事务外面 |
-| 幂等 | 请求头 `Idempotency-Key`。相同键 + 相同内容，返回第一次的订单 |
-| 金额 | 用分，整数。不用小数 |
-| 支付 | 支付单号唯一，订单只能从「已预占」变成「已支付」 |
-| Outbox | 消息和订单一起提交。现在投递只打日志，位置留好了 |
-| 缓存 | 只缓存商品名和价格 30 秒。库存不进缓存 |
-| 追踪号 | 每个响应有 `traceId`，日志里同一串字符 |
-| 虚拟线程 | Java 21 已打开 |
-
-页面上的「架构地图」和后端 `ArchitectureCatalog` 是同一份说明。
 
 ## 目录
 
@@ -126,6 +124,8 @@ deploy/k8s/  K8s 清单
 tools/       生成新病例的脚本
 docker-compose.yml
 ```
+
+仓库里如果还有 `assistant/`，那是另一条实验线，不是今天要用的商店。
 
 ## 接口说明
 
@@ -166,87 +166,34 @@ Authorization: Bearer <登录返回的 token>
 
 返回 `data`：`token`、`username`、`displayName`。令牌 12 小时有效。
 
-### 商品
+### 商品 / 库存 / 下单 / 支付
 
-`GET /api/catalog/skus`
+见页面流程即可。完整字段仍以旧接口为准：
 
-返回数组。每项：`skuCode`、`name`、`priceCent`（分）。没有库存。
-
-### 库存
-
-`GET /api/inventory`
-
-返回数组。每项：`skuCode`、`skuName`、`availableQty` 可售、`reservedQty` 预占、`priceCent`。
-
-下单成功：可售减少，预占增加。  
-支付成功：预占减少，可售不变（下单时已经减过）。
-
-### 下单
-
-`POST /api/orders`
-
-请求头可选：`Idempotency-Key`，最长 80 个字符。
-
-| 字段 | 说明 |
-| --- | --- |
-| buyerName | 买家，必填，最长 64 |
-| lines | 至少 1 行，最多 20 行 |
-| lines[].skuCode | 商品编码，例如 `TEA` |
-| lines[].quantity | 1 到 999。同一商品不要拆成两行 |
-
-返回 `data`：
-
-| 字段 | 说明 |
-| --- | --- |
-| orderNo | 订单号 |
-| status | `RESERVED` 已预占，`PAID` 已支付 |
-| buyerName | 买家 |
-| totalCent | 总金额，分 |
-| createdAt | UTC 时间 |
-| replayed | true 表示这次没有新下单，而是把第一次的结果还回来了 |
-| lines | 商品、数量、下单时的单价（分） |
-
-`GET /api/orders` 返回订单数组，新的在前。  
-`GET /api/orders/{orderNo}` 返回一笔。没有则 404。
-
-### 模拟支付
-
-`POST /api/payments/mock-callback`
-
-| 字段 | 说明 |
-| --- | --- |
-| orderNo | 订单号 |
-| payNo | 支付单号，最长 64。页面用 `PAY-订单号`，所以连点两次是同一笔 |
-
-返回 `data`：`payNo`、`orderNo`、`orderStatus`、`amountCent`、`duplicate`。  
-`duplicate` 为 true 表示这次回调被忽略了。
+- `GET /api/catalog/skus`
+- `GET /api/inventory`
+- `POST /api/orders`（可选头 `Idempotency-Key`）
+- `GET /api/orders`
+- `POST /api/payments/mock-callback`
 
 ### 病例
 
-`GET /api/incidents`
+`GET /api/incidents`  
+`PUT /api/incidents/active` 请求体 `{ "active": "none" }`  
+`POST /api/incidents/{code}/reproduce`
 
-返回：
+DAY-01 的 `reproduce` 返回 `payload`：
 
 | 字段 | 说明 |
 | --- | --- |
-| activeSwitch | 当前开关，健康实现是 `none` |
-| strategies | 已注册的库存策略。`switchName`、`title`、`active` |
-| cases | 病例卡。`code`、`title`、`symptom`、`veteranPoint`、`howToEnable`、`mutatesBehavior` |
-
-`PUT /api/incidents/active`
-
-请求体：`{ "active": "none" }`。名字必须是已经注册的策略。返回拨动之后的病例板。
-
-`POST /api/incidents/{code}/reproduce`
-
-按病例自己的脚本跑一次。`DAY-00` 会真实下一笔龙井。  
-返回：`code`、`summary`、`steps`、`payload`。
+| taskCount | 两边各干多少件小活，现在是 2000 |
+| poolSize | 线程池工人数，按本机 CPU 核数取，至少 2 |
+| wasteful | 乱开线程那一边：`elapsedMs`、`peakThreads`、`workerThreads` |
+| pooled | 线程池那一边，字段同上 |
 
 ### 架构地图
 
 `GET /api/meta/map`
-
-返回 `contexts`（边界）和 `hooks`（挂钩点）。
 
 ### 健康检查
 
@@ -261,8 +208,7 @@ Authorization: Bearer <登录返回的 token>
 | MUG | 夜班马克杯 | 39.00 元 | 8 |
 | BOOK | 并发这件小事 | 68.00 元 | 5 |
 
-本机内存库在进程退出后清空，下次启动会重新种入这些数据。  
-Compose 的 Postgres 会留着，只要库里已经有用户，就不会重复种。
+本机内存库在进程退出后清空，下次启动会重新种入这些数据。
 
 ## 配置
 
@@ -277,9 +223,7 @@ Compose 的 Postgres 会留着，只要库里已经有用户，就不会重复�
 
 ## 已知限制，以及下一步怎么长
 
-- Outbox 目前只把消息打进日志。接 Kafka 时改 `OutboxPublisher`，失败不要标记已发送。
-- 支付和缓存还没有单独的「病例路由器」。库存这套就是模板，支付的病可以照着抄一个。
-- 取消订单的状态留了 `CANCELLED`，退回库存的方法留了 `release`，还没有接口。这是 DAY-03 的位置。
-- K8s 的数据库是空目录，Pod 删除后数据消失。
-- 训练开关在内存里，多开几个后端实例时各自记各自的。本机和一个容器够用。
-- 默认 JWT 密钥是示例。这个项目是训练场，不要带着示例密钥对公网暴露。
+- DAY-01 是本机对比实验，用来摸「上下文切换」；它不模拟千万流量，只把「线程开太多更慢」这件事跑给你看。
+- Outbox 目前只把消息打进日志。
+- 取消订单的状态留了 `CANCELLED`，退回库存的方法留了 `release`，还没有接口。
+- 默认 JWT 密钥是示例。不要带着示例密钥对公网暴露。

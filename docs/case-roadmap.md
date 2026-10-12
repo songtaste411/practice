@@ -4,7 +4,8 @@
 
 | 编号 | 你可以制造的现象 | 挂钩点 |
 | --- | --- | --- |
-| DAY-01 | 连点两下，库存少了两次 | `ReserveStrategy.reserve`、幂等键 |
+| DAY-01 | 乱开线程比线程池慢（上下文切换） | `incident/lab/ContextSwitchLab` |
+| DAY-01b | 连点两下，库存少了两次（以后再做） | `ReserveStrategy.reserve`、幂等键 |
 | DAY-02 | 支付回调来两次，预占被扣穿 | `PaymentTx` |
 | DAY-03 | 取消了订单，可售数量没有回来 | `ReserveStrategy.release`，订单状态 |
 | DAY-04 | 商品改价后，已经下的单金额也变了 | 下单时要把价格抄到订单行 |

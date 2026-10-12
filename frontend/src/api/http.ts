@@ -37,8 +37,14 @@ http.interceptors.response.use(
   }
 )
 
-export async function api<T>(method: 'get' | 'post' | 'put', url: string, data?: unknown, headers?: Record<string, string>): Promise<T> {
-  const response = await http.request<ApiBody<T>>({ method, url, data, headers })
+export async function api<T>(
+  method: 'get' | 'post' | 'put',
+  url: string,
+  data?: unknown,
+  headers?: Record<string, string>,
+  timeoutMs?: number,
+): Promise<T> {
+  const response = await http.request<ApiBody<T>>({ method, url, data, headers, timeout: timeoutMs })
   return response.data.data
 }
 

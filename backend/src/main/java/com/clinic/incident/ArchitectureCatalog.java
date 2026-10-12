@@ -44,7 +44,9 @@ public class ArchitectureCatalog {
                 new SystemMap.HookCard("商品缓存", "catalog/cache/SkuCache.java",
                         "只记住名字和价钱。库存不要放进缓存。"),
                 new SystemMap.HookCard("报错编号", "shared/web/TraceFilter.java",
-                        "每次请求有一个编号，报错时能对上日志。")
+                        "每次请求有一个编号，报错时能对上日志。"),
+                new SystemMap.HookCard("线程别开太多", "incident/lab/ContextSwitchLab.java",
+                        "同一批活，乱开线程通常比线程池慢。CPU 忙着换人，真正干活的时间反而少。")
         );
     }
 }
